@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleRagApplication</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.global.prod.js"></script>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            line-height: 1.3;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        th {
+            background-color: lightyellow;
+        }
+
+        td {
+            background-color: lightblue;
+        }
+
+        th.score-column {
+            width: 200px;
+        }
+
+        #controlsDiv,
+        #searchDiv {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+        }
+
+        label {
+            display: inline-block;
+            margin-bottom: 5px;
+            margin-right: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        input, select, button {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        
+        input[type="text"] {
+            width: 320px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 15px;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        @media screen and (max-width: 600px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            #searchDiv {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            #searchDiv input {
+                width: 100% !important;
+                margin-left: 0;
+            }
+
+            #searchDiv button {
+                width: 100%;
+                margin-top: 5px;
+            }
+
+            #controlsDiv {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            #controlsDiv .control-group {
+                width: 100%;
+            }
+
+            th.score-column {
+                width: 90px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    searchResults: [],
+                    searchLimit: 5,
+                    searchLocale: ''
+                };
+            },
+            computed: {
+                isButtonDisabled() {
+                    return this.searchQuery.trim().length == 0;
+                }
+            },
+            methods: {
+                async handleClick() {
+                    try {
+                        let query = `http://localhost:8080/documents?q=${encodeURIComponent(this.searchQuery)}&k=${this.searchLimit}`;
+                        if (this.searchLocale) {
+                            query += `&l=${this.searchLocale}`;
+                        }
+                        const response = await fetch(query);
+                        if (response.ok) {
+                            this.searchResults = await response.json();
+                        } else {
+                            console.error('Error fetching data:', response.statusText);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching data:', error);
+                    }
+                },
+                handleKeyPress(event) {
+                    if (event.key === 'Enter' && !this.isButtonDisabled) {
+                        this.handleClick();
+                    }
+                }
+            },
+            template: `
+                <h1>A simple <a href="https://en.wikipedia.org/wiki/Retrieval-augmented_generation"><b>RAG</b></a> - Retrieval-Augmented Generation app created with <a href="https://spring.io/projects/spring-ai">Spring AI</a></h1>
+                <h3>Source code: <a href="https://github.com/raonigabriel/simple-rag">https://github.com/raonigabriel/simple-rag</a></h3>
+                <div id="controlsDiv">
+                    <div class="control-group">
+                        <label for="numberPicker">Number of results (top-k):</label>
+                        <input type="number" id="numberPicker" v-model="searchLimit" min="1" max="10">
+                    </div>
+                    <div class="control-group">
+                        <label for="localePicker">Locale:</label>
+                        <select id="localePicker" v-model="searchLocale">
+                            <option value="">(no filter)</option>
+                            <option value="ENGLISH">en-US</option>
+                            <option value="PORTUGUESE">pt-BR</option>
+                            <option value="SPANISH">es-MX</option>
+                            <option value="FRENCH">fr-FR</option>
+                            <option value="ITALIAN">it-IT</option>                        
+                        </select>
+                    </div>
+                </div>
+                <div id="searchDiv">
+                    <label>Search:</label>
+                    <input type="text" v-model="searchQuery" maxlength="128" placeholder="(type search criteria, eg: Queen or Raoni)" @keypress="handleKeyPress">
+                    <button :disabled="isButtonDisabled" @click="handleClick">Search</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="score-column">Score</th>
+                                <th>Text</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(row, index) in searchResults" :key="index">
+                                <td>{{ row.score }}</td>
+                                <td>{{ row.text }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

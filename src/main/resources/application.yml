@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: simple-rag
+  datasource:
+    url: jdbc:postgresql://localhost:5433/simplerag
+    username: postgres
+    password: postgres
+  ai:
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768
+        remove-existing-vector-store-table: true
+        initialize-schema: true
+    ollama:
+      embedding:
+        options:
+          model: granite-embedding:278m
+      init:
+        chat:
+          include: false
+        pull-model-strategy: WHEN_MISSING
+
+  jackson:
+    serialization:
+      'INDENT_OUTPUT': true
+
+logging:
+  level:
+    org:
+      springframework:
+        ai:
+          chat:
+            client:
+              advisor: DEBUG
+        jdbc:
+          core:
+            JdbcTemplate: DEBUG

@@ -1,0 +1,13 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:0.8.0-pg17
+    container_name: pgvector
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: simplerag
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
