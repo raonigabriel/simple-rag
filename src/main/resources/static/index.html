@@ -159,6 +159,10 @@
             methods: {
                 async handleClick() {
                     try {
+                        // Disable the button
+                        const searchButton = document.querySelector('#searchDiv button');
+                        searchButton.disabled = true;
+
                         let query = `/documents?q=${encodeURIComponent(this.searchQuery)}&k=${this.searchLimit}`;
                         if (this.searchLocale) {
                             query += `&l=${this.searchLocale}`;
@@ -171,6 +175,10 @@
                         }
                     } catch (error) {
                         console.error('Error fetching data:', error);
+                    } finally {
+                        // Re-enable the button
+                        const searchButton = document.querySelector('#searchDiv button');
+                        searchButton.disabled = false;
                     }
                 },
                 handleKeyPress(event) {
