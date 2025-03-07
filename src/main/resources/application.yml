@@ -2,7 +2,7 @@ spring:
   application:
     name: simple-rag
   datasource:
-    url: jdbc:postgresql://localhost:5433/simplerag
+    url: jdbc:postgresql://localhost:5432/simplerag
     username: postgres
     password: postgres
   ai:
