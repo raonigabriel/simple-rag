@@ -159,7 +159,7 @@
             methods: {
                 async handleClick() {
                     try {
-                        let query = `http://localhost:8080/documents?q=${encodeURIComponent(this.searchQuery)}&k=${this.searchLimit}`;
+                        let query = `/documents?q=${encodeURIComponent(this.searchQuery)}&k=${this.searchLimit}`;
                         if (this.searchLocale) {
                             query += `&l=${this.searchLocale}`;
                         }
